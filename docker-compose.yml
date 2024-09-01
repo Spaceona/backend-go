@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  app:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./firmware:/usr/src/app/firmware
+    env_file:
+      - ./.env # Specify the path to your environment file relative to the docker-compose.yml file
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 500M
+    expose:
+      - "3001"
+  cadvisor:
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:latest
+    network_mode: "host"
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/:/rootfs"
+      - "/var/run:/var/run"
+      - "/sys:/sys"
+      - "/var/lib/docker/:/var/lib/docker"
+      - "/dev/disk/:/dev/disk"
+    privileged: true
+    devices:
+      - "/dev/kmsg"
+    expose:
+      - 8080
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning

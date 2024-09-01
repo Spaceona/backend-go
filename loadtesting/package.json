@@ -1,0 +1,16 @@
+{
+  "name": "loadtesting",
+  "version": "1.0.0",
+  "description": "",
+  "main": "hourTest.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@next/env": "^14.2.5",
+    "dotenv": "^16.4.5",
+    "k6": "^0.0.0"
+  }
+}

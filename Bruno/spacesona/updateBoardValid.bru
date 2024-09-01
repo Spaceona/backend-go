@@ -1,0 +1,27 @@
+meta {
+  name: updateBoardValid
+  type: http
+  seq: 9
+}
+
+post {
+  url: http://localhost:3001/admin/device/valid
+  body: json
+  auth: bearer
+}
+
+headers {
+  : 
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fSwiZXhwIjoxNzI0MjkxODE1fQ.Ca6xlnWG1h0yV4q8sO5wogcrqSjLtMg7usMiB7kMCKI
+}
+
+body:json {
+  {
+    "board_status_mappings":[
+      {"mac_address":"test","valid":false}
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+meta {
+  name: firmwareLatest
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:3001/firmware/latest
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fSwiZXhwIjoxNzI0MDM1NjI2fQ.kvpUuiirAdHp1qGL0IyNeOsbY6FgCZEGnajdJV2TCcI
+}

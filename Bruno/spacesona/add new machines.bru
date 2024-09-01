@@ -1,0 +1,32 @@
+meta {
+  name: add new machines
+  type: http
+  seq: 11
+}
+
+post {
+  url: http://localhost:3001/admin/machine/new
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fSwiZXhwIjoxNzI0MjkxODE1fQ.Ca6xlnWG1h0yV4q8sO5wogcrqSjLtMg7usMiB7kMCKI
+}
+
+body:json {
+  {
+    "client_name":"WPI",
+    "buildings": [
+      {
+        "building_name":"East Hall",
+        "machines":[
+          {"number":1,"type":"Washer"},
+          {"number":1,"type":"Washer"},
+          {"number":1,"type":"Dryer"},
+          {"number":2,"type":"Dryer"}
+        ]
+      }
+    ]
+  }
+}

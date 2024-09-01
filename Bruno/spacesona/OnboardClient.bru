@@ -1,0 +1,18 @@
+meta {
+  name: OnboardClient
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:3001/onboard/client
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "client_name":"nicks laundry",
+    "buildings":[]
+  }
+}

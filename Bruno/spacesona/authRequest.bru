@@ -1,0 +1,18 @@
+meta {
+  name: authRequest
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:3001/auth/device
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "mac_address":"64:E8:33:86:DB:A4",
+    "firmware_version":"1-0-0"
+  }
+}

@@ -1,0 +1,15 @@
+meta {
+  name: firmwareFile
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3001/firmware/file/1-2-1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fSwiZXhwIjoxNzI0MDM0NDkzfQ.ssk8RUkW1Y24ZLA5jPNAG5iKS9Sd-EyGZMQzGXl0Lks
+}

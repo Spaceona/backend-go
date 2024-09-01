@@ -1,0 +1,19 @@
+meta {
+  name: onboardBoard
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:3001
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "mac_address":"test",
+    "client_name":"wpi",
+    "client_key":"COO1d2!RBC1GjA9#f*kdZ)mpA"
+  }
+}
