@@ -58,7 +58,7 @@ func updateStatus(request UpdateStatusRequest) error {
 		logging.GetStatusDuration.Observe(time.Since(start).Seconds())
 	}()
 	sqlStart := time.Now()
-	//todo this is slow evew localy
+	//todo this is slow even locally
 	sqlUpdateString := "UPDATE machine SET status = ?,last_write = ? WHERE mac_address= ? RETURNING id,number,mac_address,type,building_name,client_name;"
 	row, updateErr := db.UseSQL().Query(sqlUpdateString, request.Status, time.Now().Format(time.RFC1123), request.MacAddress)
 	if updateErr != nil {

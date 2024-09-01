@@ -26,8 +26,6 @@ type GetStatusResponse struct {
 	Statuses []helpers.DBMachine
 }
 
-//TODO sql fix time
-
 func GetStatusRoute(w http.ResponseWriter, r *http.Request) {
 	clientName := r.PathValue("client")
 	buildingName := r.PathValue("building")

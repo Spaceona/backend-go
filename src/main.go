@@ -11,6 +11,7 @@ import (
 	"spacesona-go-backend/admin"
 	"spacesona-go-backend/auth"
 	"spacesona-go-backend/db"
+	"spacesona-go-backend/info"
 	"spacesona-go-backend/logging"
 	"spacesona-go-backend/migrations"
 	"spacesona-go-backend/status"
@@ -49,7 +50,7 @@ func main() {
 	http.Handle("/status/{client}/{building}", logging.Middleware(http.HandlerFunc(status.GetStatusRoute)))
 	http.Handle("/status/{client}/{building}/{type}", logging.Middleware(http.HandlerFunc(status.GetStatusRoute)))
 	http.Handle("/status/{client}/{building}/{type}/{machineId}", logging.Middleware(http.HandlerFunc(status.GetStatusRoute)))
-	http.Handle("/info/client/{client}", auth.Middleware(logging.Middleware(http.HandlerFunc(status.GetStatusRoute))))
+	http.Handle("/info/client/{client}", auth.Middleware(logging.Middleware(http.HandlerFunc(info.GetClientInfoRoute))))
 	http.Handle("/metrics", promhttp.Handler())
 	startUpErr := http.ListenAndServe(":3001", nil)
 	if startUpErr != nil {

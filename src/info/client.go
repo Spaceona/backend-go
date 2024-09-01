@@ -1,4 +1,4 @@
-package status
+package info
 
 import (
 	"database/sql"

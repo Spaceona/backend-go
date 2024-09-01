@@ -28,7 +28,15 @@
   * [] spike test
   * [] load test
 * [] request validation
-* onboarding []
+* [] client info route
+  * []get all buildings and the machines in the building
+* [x] onboarding 
   * [x] generate new client key
   * [x] encrypt client key
   * [x] compare client key to encrypted key
+* [] clean up code
+* [] make a general message struct
+* [] add a custom error route
+* [] simplify local dev 
+* [] update docker file
+* [] document api
