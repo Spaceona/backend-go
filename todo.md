@@ -28,8 +28,7 @@
   * [] spike test
   * [] load test
 * [] request validation
-
-board onboarding flow
-[] boards include information about a client
-[] each client has a public key that the board sends to the server to validate against a private key
-[] board per hour pings the server and asks to be assigned a machine untill its assighe\
+* onboarding []
+  * [x] generate new client key
+  * [x] encrypt client key
+  * [x] compare client key to encrypted key
