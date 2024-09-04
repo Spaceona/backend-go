@@ -8,24 +8,24 @@ insert into building(name, client_name) values ('Faraday','WPI');
 insert into building(name, client_name) values ('East Hall','WPI');
 
 -- watson
-insert into board(mac_address, valid,client_name) VALUES ('64:E8:33:86:DB:A4',1,'Lafayette');
-insert into board(mac_address, valid,client_name) VALUES ('testing2',1,'Lafayette');
+insert into board(mac_address, valid,client_name,heart_beat_interval) VALUES ('64:E8:33:86:DB:A4',1,'Lafayette',15);
+insert into board(mac_address, valid,client_name,heart_beat_interval) VALUES ('testing2',1,'Lafayette',15);
 
 -- reeder
-insert into board(mac_address, valid,client_name) VALUES ('testing3',1,'Lafayette');
-insert into board(mac_address, valid,client_name) VALUES ('testing4',1,'Lafayette');
+insert into board(mac_address, valid,client_name,heart_beat_interval) VALUES ('testing3',1,'Lafayette',15);
+insert into board(mac_address, valid,client_name,heart_beat_interval) VALUES ('testing4',1,'Lafayette',15);
 
 --faraday
-insert into board(mac_address, valid,client_name) VALUES ('testing5',1,'WPI');
-insert into board(mac_address, valid,client_name) VALUES ('testing6',1,'WPI');
+insert into board(mac_address, valid,client_name,heart_beat_interval) VALUES ('testing5',1,'WPI',15);
+insert into board(mac_address, valid,client_name,heart_beat_interval) VALUES ('testing6',1,'WPI',15);
 
 --east
-insert into board(mac_address, valid,client_name) VALUES ('testing7',1,'WPI');
-insert into board(mac_address, valid,client_name) VALUES ('testing8',1,'WPI');
+insert into board(mac_address, valid,client_name,heart_beat_interval) VALUES ('testing7',1,'WPI',15);
+insert into board(mac_address, valid,client_name,heart_beat_interval) VALUES ('testing8',1,'WPI',15);
 
 --un assigned
-insert into board(mac_address, valid) VALUES ('testing9',1);
-insert into board(mac_address, valid) VALUES ('testing10',1);
+insert into board(mac_address, valid,heart_beat_interval) VALUES ('testing9',1,15);
+insert into board(mac_address, valid,heart_beat_interval) VALUES ('testing10',1,15);
 
 
 insert into machine(number,mac_address,type,building_name,client_name,status) values (1,'64:E8:33:86:DB:A4','Washer','Watson Hall','Lafayette',0);

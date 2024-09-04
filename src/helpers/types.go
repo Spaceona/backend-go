@@ -15,11 +15,11 @@ type SetupMachine struct {
 }
 
 type DBMachine struct {
-	Id         string `json:"id"`
+	Id         int    `json:"id"`
 	Number     int    `json:"number"`
 	MacAddress string `json:"mac_address"`
 	Type       string `json:"type"`
-	Status     string `json:"status"`
+	Status     bool   `json:"status"`
 	Building   string `json:"building"`
 	ClientName string `json:"client_name"`
 }

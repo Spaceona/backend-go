@@ -12,18 +12,8 @@ import (
 	"time"
 )
 
-type boardStatus struct {
-	MacAddress   string
-	Status       bool
-	MachineId    int
-	MachineNum   int
-	BuildingName string
-	ClientName   string
-	MachineType  string
-}
-
 type GetStatusResponse struct {
-	Statuses []helpers.DBMachine
+	Statuses map[int]helpers.DBMachine
 }
 
 func GetStatusRoute(w http.ResponseWriter, r *http.Request) {
@@ -50,14 +40,14 @@ func GetStatusRoute(w http.ResponseWriter, r *http.Request) {
 		macAddress = "*"
 	}
 	//TODO this could be slow and may need optimisation in the future but on the upside no db reads
-	rdsScanQuery := fmt.Sprintf("client:%s:building:%s:type:%s:machine:%s", clientName, buildingName, machineType, buildingName)
+	rdsScanQuery := fmt.Sprintf("client:%s:building:%s:type:%s:machine:%s", clientName, buildingName, machineType, machineType)
 	machines, _, rdsErr := rds.Scan(ctx, 0, rdsScanQuery, 100).Result()
 	if rdsErr != nil {
 		slog.Error(rdsErr.Error())
 		return
 	}
 	//todo Also could be slow depending on the query but for now its like only ~150 machines so its fine :)
-	var machinesFromeCache []helpers.DBMachine
+	machinesFromeCache := make(map[int]helpers.DBMachine)
 	for _, machine := range machines {
 		result, GetValueErr := rds.Get(ctx, machine).Result()
 		if GetValueErr != nil {
@@ -68,7 +58,7 @@ func GetStatusRoute(w http.ResponseWriter, r *http.Request) {
 		if decodeErr != nil {
 			slog.Error(decodeErr.Error())
 		}
-		machinesFromeCache = append(machinesFromeCache, decoded)
+		machinesFromeCache[decoded.Id] = decoded
 	}
 	getStatusResponse := GetStatusResponse{machinesFromeCache}
 	responseString, jsonEncodeErr := json.Marshal(getStatusResponse)
@@ -83,6 +73,18 @@ func GetStatusRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	return
+}
+
+///-------------------- old code
+
+type boardStatus struct {
+	MacAddress   string
+	Status       bool
+	MachineId    int
+	MachineNum   int
+	BuildingName string
+	ClientName   string
+	MachineType  string
 }
 
 func getFromDb(clientName string, buildingName string, machineType string, machineId string) ([]boardStatus, error) {

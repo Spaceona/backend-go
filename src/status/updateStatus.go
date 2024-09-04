@@ -1,6 +1,7 @@
 package status
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -8,15 +9,16 @@ import (
 	"spacesona-go-backend/db"
 	"spacesona-go-backend/helpers"
 	"spacesona-go-backend/logging"
-	"strconv"
 	"time"
 )
 
 type UpdateStatusRequest struct {
-	MacAddress      string `json:"mac_address"` //TODO only send mac
-	FirmwareVersion string `json:"firmware_version"`
-	Status          bool   `json:"Status"`
-	Confidence      int    `json:"Confidence"`
+	MacAddress        string `json:"mac_address"` //TODO only send mac
+	FirmwareVersion   string `json:"firmware_version"`
+	Status            bool   `json:"Status"`
+	StatusChanged     bool   `json:"StatusChanged"`
+	TimeBetweenChange int    `json:"timeBetweenChange"`
+	Confidence        int    `json:"Confidence"`
 }
 
 func UpdateStatusRoute(w http.ResponseWriter, r *http.Request) {
@@ -34,10 +36,18 @@ func UpdateStatusRoute(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cant decode request", http.StatusBadRequest)
 		return
 	}
-	updateErr := updateStatus(body)
-	if updateErr != nil {
-		http.Error(w, "failed to update status", http.StatusInternalServerError)
-		return
+	if body.StatusChanged == true {
+		updateErr := updateStatus(body)
+		if updateErr != nil {
+			http.Error(w, "failed to update status", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		refreshErr := refreshCache(body)
+		if refreshErr != nil {
+			http.Error(w, "failed to update status", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -51,6 +61,39 @@ func UpdateStatusRoute(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func refreshCache(request UpdateStatusRequest) error {
+	sqlUpdateString := "SELECT id,number,mac_address,type,building_name,client_name FROM machine WHERE mac_address= ?"
+	row, updateErr := db.UseSQL().Query(sqlUpdateString, request.MacAddress)
+	if updateErr != nil {
+		//TODO dont send back sql errs
+		return updateErr
+	}
+	row.Next()
+	defer func(row *sql.Rows) {
+		rowCloseErr := row.Close()
+		if rowCloseErr != nil {
+			slog.Error("failed to close row", rowCloseErr.Error())
+		}
+	}(row)
+	var machineForCache helpers.DBMachine
+	rowScanErr := row.Scan(&machineForCache.Id, &machineForCache.Number, &machineForCache.MacAddress, &machineForCache.Type, &machineForCache.Building, &machineForCache.ClientName)
+	if rowScanErr != nil {
+		slog.Error("failed to scan row")
+	}
+	machineForCache.Status = request.Status
+
+	return updateCache(machineForCache)
+}
+
+func updateCache(machineForCache helpers.DBMachine) error {
+	rds, ctx := db.UseRedis()
+	_, redisErr := rds.Set(ctx, fmt.Sprintf("client:%s:building:%s:type:%s:machine:%s", machineForCache.ClientName, machineForCache.Building, machineForCache.Type, machineForCache.MacAddress), machineForCache, time.Minute*30).Result()
+	if redisErr != nil {
+		slog.Error(redisErr.Error())
+	}
+	return redisErr
+}
+
 func updateStatus(request UpdateStatusRequest) error {
 	start := time.Now()
 	defer func() {
@@ -58,7 +101,6 @@ func updateStatus(request UpdateStatusRequest) error {
 		logging.GetStatusDuration.Observe(time.Since(start).Seconds())
 	}()
 	sqlStart := time.Now()
-	//todo this is slow even locally
 	sqlUpdateString := "UPDATE machine SET status = ?,last_write = ? WHERE mac_address= ? RETURNING id,number,mac_address,type,building_name,client_name;"
 	row, updateErr := db.UseSQL().Query(sqlUpdateString, request.Status, time.Now().Format(time.RFC1123), request.MacAddress)
 	if updateErr != nil {
@@ -72,32 +114,25 @@ func updateStatus(request UpdateStatusRequest) error {
 	if rowScanErr != nil {
 		slog.Error("failed to scan row")
 	}
+
 	//
 	go func(request UpdateStatusRequest) {
 		rowCloseErr := row.Close()
-		go addToHistory(request)
+		go addToHistory(request, machineForCache.Id)
 		if rowCloseErr != nil {
 			slog.Error("failed to close row", rowCloseErr.Error())
 		}
 	}(request)
 	slog.Info("sql duration row scan", time.Since(rowScanStart).Milliseconds())
 	slog.Info("sql duration", time.Since(sqlStart).Milliseconds())
-	rdsStart := time.Now()
-	machineForCache.Status = strconv.FormatBool(request.Status)
-	rds, ctx := db.UseRedis()
-	_, redisErr := rds.Set(ctx, fmt.Sprintf("client:%s:building:%s:type:%s:machine:%s", machineForCache.ClientName, machineForCache.Building, machineForCache.Type, machineForCache.MacAddress), machineForCache, time.Minute*30).Result()
-	if redisErr != nil {
-		slog.Error(redisErr.Error())
-		return redisErr
-	}
-	slog.Info("sql duration", time.Since(rdsStart).Milliseconds())
-	return nil
+	machineForCache.Status = request.Status
+	return updateCache(machineForCache)
 }
 
-func addToHistory(body UpdateStatusRequest) {
+func addToHistory(body UpdateStatusRequest, machineID int) {
 	//TODO turn this into a transaction
-	sqlString := "INSERT INTO StatusChange (mac_address,current_version,Status,Confidence,Date) VALUES (?,?,?,?,?)"
-	_, dbErr := db.UseSQL().Exec(sqlString, body.MacAddress, body.FirmwareVersion, body.Status, body.Confidence, time.Now().Format(time.RFC1123))
+	sqlString := "INSERT INTO StatusChange (machine_id,firmware_version,Status,Confidence,Date,hour,day_of_the_week,month,year) VALUES (?,?,?,?,?,?,?,?,?)"
+	_, dbErr := db.UseSQL().Exec(sqlString, machineID, body.FirmwareVersion, body.Status, body.Confidence, time.Now().Format(time.RFC1123), time.Now().Hour(), time.Now().Weekday().String(), time.Now().Month().String(), time.Now().Year())
 	if dbErr != nil {
 		//TODO dont send back sql errs
 		slog.Error(dbErr.Error())
