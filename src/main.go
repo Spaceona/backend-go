@@ -42,7 +42,7 @@ func main() {
 	http.Handle("/auth/device", logging.Middleware(deviceAuthRoute))
 	http.Handle("/auth/user", logging.Middleware(userAuthRoute))
 	http.Handle("/status/update", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(status.UpdateStatusRoute))))
-	http.Handle("/onboard/board", logging.Middleware(helpers.CorsMiddleware(admin.BoardOnboardingRoute)))
+	http.Handle("/onboard/board", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(admin.BoardOnboardingRoute))))
 	http.Handle("/onboard/client", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(admin.ClientOnboardingRoute))))
 	http.Handle("/admin/machine/assign", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(admin.AssignBoardEndpoint))))
 	http.Handle("/admin/device/valid", logging.Middleware(logging.Middleware(helpers.CorsMiddleware(admin.SetBoardValid))))

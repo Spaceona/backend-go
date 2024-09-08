@@ -34,6 +34,7 @@ func New() *database {
 		panic(dbconErr.Error() + dbName)
 	}
 	pingErr := db.Ping()
+	//db.SetMaxOpenConns(1)
 	if pingErr != nil {
 		log.Fatal(pingErr)
 	}
@@ -61,12 +62,12 @@ func New() *database {
 
 // todo figure out how to not lock the database
 func UseSQL() *sql.DB {
-	db, dbconErr := sql.Open("libsql", Database.sqlUrl)
-	if dbconErr != nil {
-		_ = fmt.Errorf(dbconErr.Error())
-		panic(dbconErr)
-	}
-	Database.DB = db
+	//db, dbconErr := sql.Open("libsql", Database.sqlUrl)
+	//if dbconErr != nil {
+	//	_ = fmt.Errorf(dbconErr.Error())
+	//	panic(dbconErr)
+	//}
+	//Database.DB = db
 	return Database.DB
 }
 

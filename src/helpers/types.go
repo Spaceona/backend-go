@@ -15,13 +15,15 @@ type SetupMachine struct {
 }
 
 type DBMachine struct {
-	Id         int    `json:"id"`
-	Number     int    `json:"number"`
-	MacAddress string `json:"mac_address"`
-	Type       string `json:"type"`
-	Status     bool   `json:"status"`
-	Building   string `json:"building"`
-	ClientName string `json:"client_name"`
+	Id                int    `json:"id"`
+	Number            int    `json:"number"`
+	MacAddress        string `json:"mac_address"`
+	Type              string `json:"type"`
+	Status            bool   `json:"status"`
+	Building          string `json:"building"`
+	ClientName        string `json:"client_name"`
+	EstimatedDuration int    `json:"estimated_duration"`
+	NumberOfRuns      int    `json:"number_of_runs"`
 }
 
 func (cm DBMachine) MarshalBinary() ([]byte, error) {

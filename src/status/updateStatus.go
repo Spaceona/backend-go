@@ -33,18 +33,21 @@ func UpdateStatusRoute(w http.ResponseWriter, r *http.Request) {
 	var body UpdateStatusRequest
 	decodeErr := json.NewDecoder(r.Body).Decode(&body)
 	if decodeErr != nil {
+		slog.Error(decodeErr.Error())
 		http.Error(w, "cant decode request", http.StatusBadRequest)
 		return
 	}
 	if body.StatusChanged == true {
 		updateErr := updateStatus(body)
 		if updateErr != nil {
+			slog.Error(updateErr.Error())
 			http.Error(w, "failed to update status", http.StatusInternalServerError)
 			return
 		}
 	} else {
 		refreshErr := refreshCache(body)
 		if refreshErr != nil {
+			slog.Error(refreshErr.Error())
 			http.Error(w, "failed to update status", http.StatusInternalServerError)
 			return
 		}
@@ -81,7 +84,7 @@ func refreshCache(request UpdateStatusRequest) error {
 		slog.Error("failed to scan row")
 	}
 	machineForCache.Status = request.Status
-
+	machineForCache.EstimatedDuration = request.TimeBetweenChange
 	return updateCache(machineForCache)
 }
 
@@ -97,7 +100,6 @@ func updateCache(machineForCache helpers.DBMachine) error {
 func updateStatus(request UpdateStatusRequest) error {
 	start := time.Now()
 	defer func() {
-
 		logging.GetStatusDuration.Observe(time.Since(start).Seconds())
 	}()
 	sqlStart := time.Now()
@@ -116,9 +118,9 @@ func updateStatus(request UpdateStatusRequest) error {
 	}
 
 	//
-	go func(request UpdateStatusRequest) {
+	defer func(request UpdateStatusRequest) {
 		rowCloseErr := row.Close()
-		go addToHistory(request, machineForCache.Id)
+		addToHistory(request, machineForCache.Id)
 		if rowCloseErr != nil {
 			slog.Error("failed to close row", rowCloseErr.Error())
 		}
@@ -126,6 +128,7 @@ func updateStatus(request UpdateStatusRequest) error {
 	slog.Info("sql duration row scan", time.Since(rowScanStart).Milliseconds())
 	slog.Info("sql duration", time.Since(sqlStart).Milliseconds())
 	machineForCache.Status = request.Status
+	machineForCache.EstimatedDuration = request.TimeBetweenChange
 	return updateCache(machineForCache)
 }
 
