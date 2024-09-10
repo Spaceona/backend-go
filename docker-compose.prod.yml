@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  app:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./firmware:/usr/src/app/firmware
+      - ./database.db:/usr/database.db
+      - ./.env:/usr/.env
+    env_file:
+      - ./.env # Specify the path to your environment file relative to the docker-compose.yml file
+    restart: always
+    expose:
+      - "3001"
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning
