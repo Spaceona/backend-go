@@ -5,7 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	_ "github.com/prometheus/client_golang/prometheus/promhttp"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"spacesona-go-backend/admin"
@@ -22,7 +22,10 @@ func main() {
 	//todo make it so we can pass in db url
 	envErr := godotenv.Load()
 	if envErr != nil {
-		log.Fatal("Error loading .env file")
+		slog.Error("Error loading .env file")
+		for {
+			// we loop here so I can pop a shell
+		}
 	}
 	db.Database = db.New()
 	migrate := os.Getenv("MIGRATE")
