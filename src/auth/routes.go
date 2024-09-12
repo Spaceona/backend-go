@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"time"
 )
 
 type authDeviceResponse struct {
@@ -32,7 +33,7 @@ func (d Route[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, tokenErr := GenToken(body)
+	token, tokenErr := GenToken(body, 24*time.Hour)
 	if tokenErr != nil {
 		slog.Error(tokenErr.Error())
 		http.Error(w, "could not authenticate device", http.StatusBadRequest)

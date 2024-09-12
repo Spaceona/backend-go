@@ -8,8 +8,8 @@ RUN go mod download
 COPY ./src .
 COPY ./migrations ./migrations
 #TOOD remove me
-COPY .env .env
-COPY ./test.db ./test.db
+#COPY .env .env
+#COPY ./test.db ./test.db
 
 RUN go build -o /spacesona-go
 

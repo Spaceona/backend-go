@@ -43,3 +43,4 @@
 * [] metrics
   * [] return how busy each hour is at each day of the week
   * [] return how busy an individual machine is based on machine id
+* [] Increase reliability with context

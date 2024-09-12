@@ -27,11 +27,11 @@ func ValidateToken(token string) error {
 	return nil
 }
 
-func GenToken(data interface{}) (string, error) {
+func GenToken(data interface{}, expiresIn time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"data": data,
-			"exp":  time.Now().Add(time.Hour * 24).Unix(),
+			"exp":  time.Now().Add(expiresIn).Unix(),
 		})
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }

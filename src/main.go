@@ -36,14 +36,15 @@ func main() {
 	deviceAuthRoute := auth.Route[auth.AuthDeviceRequest]{
 		auth.IsValidDevice,
 	}
-	userAuthRoute := auth.Route[auth.AuthUserRequest]{
-		auth.IsValidUser,
-	}
+	//userAuthRoute := auth.Route[auth.AuthUserRequest]{
+	//	auth.IsValidUser,
+	//}
 	http.Handle("/", helpers.CorsMiddleware(info.APIInfoRoute))
 	http.Handle("/firmware/file/{version}", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(FileRoute))))
 	http.Handle("/firmware/latest", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(LatestVersionRoute))))
 	http.Handle("/auth/device", logging.Middleware(deviceAuthRoute))
-	http.Handle("/auth/user", logging.Middleware(userAuthRoute))
+	http.Handle("/auth/user", logging.Middleware(http.HandlerFunc(auth.GoogleConsent)))
+	http.Handle("/auth/user/callback", logging.Middleware(http.HandlerFunc(auth.Callback)))
 	http.Handle("/status/update", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(status.UpdateStatusRoute))))
 	http.Handle("/onboard/board", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(admin.BoardOnboardingRoute))))
 	http.Handle("/onboard/client", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(admin.ClientOnboardingRoute))))
@@ -57,7 +58,7 @@ func main() {
 	http.Handle("/status/{client}/{building}/{type}/{machineId}", logging.Middleware(helpers.CorsMiddleware(status.GetStatusRoute)))
 	http.Handle("/info/client/{client}", logging.Middleware(helpers.CorsMiddleware(info.GetClientInfoRoute)))
 	http.Handle("/metrics", promhttp.Handler())
-	startUpErr := http.ListenAndServe(":3001", nil)
+	startUpErr := http.ListenAndServe(":3000", nil)
 	if startUpErr != nil {
 		panic(startUpErr)
 		return

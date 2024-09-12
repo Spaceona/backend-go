@@ -6,8 +6,8 @@ services:
       - "3001:3001"
     volumes:
       - ./firmware:/usr/src/app/firmware
-      - ./database.db:/usr/database.db
-      - ./.env:/usr/.env
+      - ./database.db:/app/database.db
+      - ./.env:/app/.env
     env_file:
       - ./.env # Specify the path to your environment file relative to the docker-compose.yml file
     restart: always
