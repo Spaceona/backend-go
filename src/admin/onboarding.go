@@ -29,7 +29,7 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	var body DeviceOnboardRequest
 	decodeErr := json.NewDecoder(r.Body).Decode(&body)
 	if decodeErr != nil {
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
+		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
 	querySqlString := "SELECT name,key,salt FROM client where name = ?;"
