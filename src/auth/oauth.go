@@ -102,8 +102,7 @@ func GetGoogleToken(code string) (GoogleTokenResponse, error) {
 
 	req, requestCreationError := http.NewRequest("POST", "https://oauth2.googleapis.com/token", bytes.NewBuffer(requestString))
 	if requestCreationError != nil {
-		http.Error(w, "failed to login", http.StatusInternalServerError)
-		return
+		return GoogleTokenResponse{}, requestCreationError
 	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
