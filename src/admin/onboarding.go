@@ -29,14 +29,14 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	var body DeviceOnboardRequest
 	decodeErr := json.NewDecoder(r.Body).Decode(&body)
 	if decodeErr != nil {
-		slog.Error(decodeErr.Error())
+		slog.Error("decode err", "error", decodeErr.Error())
 		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
 	querySqlString := "SELECT name,key,salt FROM client where name = ?;"
 	row, queryErr := db.UseSQL().Query(querySqlString, body.ClientName)
 	if queryErr != nil {
-		slog.Error(queryErr.Error())
+		slog.Error("query err", "error", queryErr.Error())
 		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
@@ -44,25 +44,25 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	row.Next()
 	rowScanErr := row.Scan(&client.Name, &client.Key, &client.Salt)
 	if rowScanErr != nil {
-		slog.Error(rowScanErr.Error())
+		slog.Error("scan err", "error", rowScanErr.Error())
 		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
 	closeErr := row.Close()
 	if closeErr != nil {
-		slog.Error(closeErr.Error())
+		slog.Error("close err", "error", closeErr.Error())
 		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
 	clientCheck, clientErr := auth.EncryptString(client.Key, client.Salt)
 	if clientErr != nil {
-		slog.Error(clientErr.Error())
+		slog.Error("encrypt client err", "error", clientErr.Error())
 		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
 	dbCheck, dbErr := auth.EncryptString(body.ClientKey, client.Salt)
 	if dbErr != nil {
-		slog.Error(dbErr.Error())
+		slog.Error("encrypt db err", "error", dbErr.Error())
 		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
@@ -73,7 +73,7 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	_, execErr := db.UseSQL().Exec(newBoardSqlString, body.MacAddress, 1, client.Name)
 	if execErr != nil {
 		execErrString := execErr.Error()
-		slog.Error(execErrString)
+		slog.Error("db insert err", "error", execErrString)
 		if strings.Contains(execErrString, "UNIQUE constraint failed") {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
