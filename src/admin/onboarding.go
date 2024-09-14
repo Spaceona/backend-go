@@ -68,7 +68,22 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	newBoardSqlString := "INSERT INTO board (mac_address, valid, client_name)  VALUES (?,?,?);"
 	_, execErr := db.UseSQL().Exec(newBoardSqlString, body.MacAddress, 1, client.Name)
 	if execErr != nil {
-		slog.Error(execErr.Error())
+		execErrString := execErr.Error()
+		slog.Error(execErrString)
+		if strings.Contains(execErrString, "UNIQUE constraint failed") {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			response := ClientOnboardResponse{Message: "Device already onboarded!"}
+			responseJson, jsonEncodeErr := json.Marshal(response)
+			if jsonEncodeErr != nil {
+				http.Error(w, "something went wrong! but you should already be onboarded", http.StatusInternalServerError)
+			}
+			_, writeErr := w.Write(responseJson)
+			if writeErr != nil {
+				http.Error(w, "something went wrong! but you should already be onboarded", http.StatusInternalServerError)
+				return
+			}
+		}
 		http.Error(w, "failed to onboard device", http.StatusInternalServerError)
 		return
 	}
