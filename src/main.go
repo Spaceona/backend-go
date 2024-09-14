@@ -58,7 +58,11 @@ func main() {
 	http.Handle("/status/{client}/{building}/{type}/{machineId}", logging.Middleware(helpers.CorsMiddleware(status.GetStatusRoute)))
 	http.Handle("/info/client/{client}", logging.Middleware(helpers.CorsMiddleware(info.GetClientInfoRoute)))
 	http.Handle("/metrics", promhttp.Handler())
-	startUpErr := http.ListenAndServe(":3000", nil)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3001"
+	}
+	startUpErr := http.ListenAndServe(":"+port, nil)
 	if startUpErr != nil {
 		panic(startUpErr)
 		return
