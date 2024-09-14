@@ -23,7 +23,7 @@ type AssignBoardResponse struct { // todo concolidate to spacesona responce with
 
 func AssignBoardEndpoint(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		slog.Error("AssignBoardEndpoint expects POST")
+		slog.Error("AssignBoardEndpoint expects POST", "method", r.Method)
 		http.NotFound(w, r)
 		return
 	}
