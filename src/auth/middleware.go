@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"spacesona-go-backend/logging"
 	"strings"
@@ -8,6 +9,7 @@ import (
 
 func Middleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("huh")
 		//TODO validate token
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
@@ -27,7 +29,7 @@ func Middleware(next http.HandlerFunc) http.HandlerFunc {
 			http.Error(w, "not authenticated", http.StatusUnauthorized)
 			return
 		}
-		
+
 		logging.RequestsAuthenticated.Inc()
 		next.ServeHTTP(w, r)
 	}

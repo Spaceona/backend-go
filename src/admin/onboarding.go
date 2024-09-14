@@ -36,20 +36,20 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	row, queryErr := db.UseSQL().Query(querySqlString, body.ClientName)
 	if queryErr != nil {
 		slog.Error(queryErr.Error())
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
+		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
 	var client helpers.Client
 	row.Next()
 	rowScanErr := row.Scan(&client.Name, &client.Key, &client.Salt)
 	if rowScanErr != nil {
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
+		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
 	closeErr := row.Close()
 	if closeErr != nil {
 		slog.Error(closeErr.Error())
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
+		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
 	clientCheck, clientErr := auth.EncryptString(client.Key, client.Salt)
@@ -59,11 +59,11 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	dbCheck, dbErr := auth.EncryptString(body.ClientKey, client.Salt)
 	if dbErr != nil {
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
+		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
 	if clientCheck != dbCheck {
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
+		http.Error(w, "could not onboard device", http.StatusBadRequest)
 	}
 	newBoardSqlString := "INSERT INTO board (mac_address, valid, client_name)  VALUES (?,?,?);"
 	_, execErr := db.UseSQL().Exec(newBoardSqlString, body.MacAddress, 1, client.Name)
