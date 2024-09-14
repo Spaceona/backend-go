@@ -45,7 +45,7 @@ func UpdateStatusRoute(w http.ResponseWriter, r *http.Request) {
 		if updateErr != nil {
 			slog.Error(updateErr.Error())
 			if errors.Is(updateErr, NotMappedError) {
-				http.Error(w, "board is not mapped to a machine contact admin", http.StatusInternalServerError)
+				http.Error(w, "board is not mapped to a machine contact admin", http.StatusBadRequest)
 				return
 			}
 			http.Error(w, "failed to update status", http.StatusInternalServerError)
