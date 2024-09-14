@@ -54,7 +54,7 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	clientCheck, clientErr := auth.EncryptString(client.Key, client.Salt)
 	if clientErr != nil {
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
+		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
 	dbCheck, dbErr := auth.EncryptString(body.ClientKey, client.Salt)
