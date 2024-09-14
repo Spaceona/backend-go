@@ -57,6 +57,36 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	code := query.Get("code")
 
+	googleToken, tokenErr := GetGoogleToken(code)
+	if tokenErr != nil {
+		slog.Error(tokenErr.Error())
+		http.Error(w, "failed to login", http.StatusInternalServerError)
+	}
+	//TODO get google user info
+
+	token := SpaceonaUserToken{}
+	spaceonaToken, spaceonaTokenError := GenToken(token, time.Duration(googleToken.ExpiresIn)*time.Second)
+	if spaceonaTokenError != nil {
+		slog.Error(spaceonaTokenError.Error())
+		http.Error(w, "failed to login", http.StatusInternalServerError)
+		return
+	}
+	cookie := http.Cookie{
+		Name:     "AuthToken",
+		Value:    spaceonaToken,
+		Domain:   "localhost",
+		Path:     "/",
+		Expires:  time.Now().Add(time.Duration(googleToken.ExpiresIn) * time.Second),
+		MaxAge:   googleToken.ExpiresIn,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(w, &cookie)
+	http.Redirect(w, r, "https://spaceona.com", http.StatusPermanentRedirect)
+}
+
+func GetGoogleToken(code string) (GoogleTokenResponse, error) {
 	googleTokenRequest := GoogleTokenRequest{
 		AccessCode:   code,
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
@@ -67,9 +97,9 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 
 	requestString, marshalError := json.Marshal(&googleTokenRequest)
 	if marshalError != nil {
-		http.Error(w, "failed to login", http.StatusInternalServerError)
-		return
+		return GoogleTokenResponse{}, marshalError
 	}
+
 	req, requestCreationError := http.NewRequest("POST", "https://oauth2.googleapis.com/token", bytes.NewBuffer(requestString))
 	if requestCreationError != nil {
 		http.Error(w, "failed to login", http.StatusInternalServerError)
@@ -79,8 +109,7 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{}
 	response, tokenError := client.Do(req)
 	if tokenError != nil {
-		http.Error(w, "failed to login", http.StatusInternalServerError)
-		return
+		return GoogleTokenResponse{}, tokenError
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -95,29 +124,7 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	var resJson GoogleTokenResponse
 	decodeError := json.Unmarshal(body, &resJson)
 	if decodeError != nil {
-		http.Error(w, "failed to login", http.StatusInternalServerError)
-		return
+		return GoogleTokenResponse{}, decodeError
 	}
-	token := SpaceonaUserToken{}
-	spaceonaToken, spaceonaTokenError := GenToken(token, time.Duration(resJson.ExpiresIn)*time.Second)
-	if spaceonaTokenError != nil {
-		slog.Error(spaceonaTokenError.Error())
-		http.Error(w, "failed to login", http.StatusInternalServerError)
-		return
-	}
-	cookie := http.Cookie{
-		Name:     "AuthToken",
-		Value:    spaceonaToken,
-		Domain:   "localhost",
-		Path:     "/",
-		Expires:  time.Now().Add(time.Duration(resJson.ExpiresIn) * time.Second),
-		MaxAge:   resJson.ExpiresIn,
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	}
-	fmt.Println("cookie:", cookie.String())
-	http.SetCookie(w, &cookie)
-	fmt.Println(w.Header().Values("Set-Cookie"))
-	http.Redirect(w, r, "https://spaceona.com", http.StatusPermanentRedirect)
+	return resJson, nil
 }
