@@ -3,6 +3,7 @@ package status
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -20,6 +21,8 @@ type UpdateStatusRequest struct {
 	TimeBetweenChange int    `json:"timeBetweenChange"`
 	Confidence        int    `json:"Confidence"`
 }
+
+var NotMappedError = errors.New("board is not mapped to machine")
 
 func UpdateStatusRoute(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("hitting end point")
@@ -41,6 +44,10 @@ func UpdateStatusRoute(w http.ResponseWriter, r *http.Request) {
 		updateErr := updateStatus(body)
 		if updateErr != nil {
 			slog.Error(updateErr.Error())
+			if errors.Is(updateErr, NotMappedError) {
+				http.Error(w, "board is not mapped to a machine contact admin", http.StatusInternalServerError)
+				return
+			}
 			http.Error(w, "failed to update status", http.StatusInternalServerError)
 			return
 		}
@@ -71,7 +78,10 @@ func refreshCache(request UpdateStatusRequest) error {
 		//TODO dont send back sql errs
 		return updateErr
 	}
-	row.Next()
+	hasRows := row.Next()
+	if hasRows == false {
+		return NotMappedError
+	}
 	defer func(row *sql.Rows) {
 		rowCloseErr := row.Close()
 		if rowCloseErr != nil {

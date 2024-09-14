@@ -74,6 +74,7 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	if execErr != nil {
 		execErrString := execErr.Error()
 		slog.Error("db insert err", "error", execErrString)
+
 		if strings.Contains(execErrString, "UNIQUE constraint failed") {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
@@ -87,6 +88,7 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "something went wrong! but you should already be onboarded", http.StatusInternalServerError)
 				return
 			}
+			return
 		}
 		http.Error(w, "failed to onboard device", http.StatusInternalServerError)
 		return
