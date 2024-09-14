@@ -29,6 +29,7 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	var body DeviceOnboardRequest
 	decodeErr := json.NewDecoder(r.Body).Decode(&body)
 	if decodeErr != nil {
+		slog.Error(decodeErr.Error())
 		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
@@ -43,6 +44,7 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	row.Next()
 	rowScanErr := row.Scan(&client.Name, &client.Key, &client.Salt)
 	if rowScanErr != nil {
+		slog.Error(rowScanErr.Error())
 		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
@@ -54,11 +56,13 @@ func BoardOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	clientCheck, clientErr := auth.EncryptString(client.Key, client.Salt)
 	if clientErr != nil {
+		slog.Error(clientErr.Error())
 		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
 	dbCheck, dbErr := auth.EncryptString(body.ClientKey, client.Salt)
 	if dbErr != nil {
+		slog.Error(dbErr.Error())
 		http.Error(w, "could not onboard device", http.StatusBadRequest)
 		return
 	}
