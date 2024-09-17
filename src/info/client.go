@@ -32,10 +32,10 @@ func GetClientInfoRoute(w http.ResponseWriter, r *http.Request) {
 		if scanErr != nil {
 			slog.Error(scanErr.Error())
 		}
-		if len(buildings[machine.Building]) == 0 {
-			buildings[machine.Building] = make([]helpers.DBMachine, 0)
+		if len(buildings[machine.Building.String]) == 0 {
+			buildings[machine.Building.String] = make([]helpers.DBMachine, 0)
 		}
-		buildings[machine.Building] = append(buildings[machine.Building], machine)
+		buildings[machine.Building.String] = append(buildings[machine.Building.String], machine)
 	}
 	getStatusResponse := GetMachinesResponse{buildings}
 	responseString, jsonEncodeErr := json.Marshal(getStatusResponse)
