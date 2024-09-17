@@ -15,7 +15,7 @@ type GetMachinesResponse struct {
 
 func GetClientInfoRoute(w http.ResponseWriter, r *http.Request) {
 	clientName := r.PathValue("client")
-	rows, sqlErr := db.UseSQL().Query("SELECT id,number,building_name,client_name,type from  machine where client_name = ?", clientName)
+	rows, sqlErr := db.UseSQL().Query("SELECT id,number,mac_address,building_name,client_name,type from  machine where client_name = ?", clientName)
 	if sqlErr != nil {
 		return
 	}
@@ -28,7 +28,7 @@ func GetClientInfoRoute(w http.ResponseWriter, r *http.Request) {
 	buildings := make(map[string][]helpers.DBMachine)
 	for rows.Next() {
 		var machine helpers.DBMachine
-		scanErr := rows.Scan(&machine.Id, &machine.Number, &machine.Building, &machine.ClientName, &machine.Type)
+		scanErr := rows.Scan(&machine.Id, &machine.Number, &machine.MacAddress, &machine.Building, &machine.ClientName, &machine.Type)
 		if scanErr != nil {
 			slog.Error(scanErr.Error())
 		}
