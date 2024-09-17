@@ -35,7 +35,7 @@ func AssignBoardEndpoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, mapping := range body.Mappings {
-		sqlUpdateString := "UPDATE machine SET mac_address = ? WHERE id = ?"
+		sqlUpdateString := "UPDATE machine SET mac_address = ? WHERE id = ?;"
 		_, updateErr := db.UseSQL().Exec(sqlUpdateString, mapping.MacAddress, mapping.MachineId)
 		if updateErr != nil {
 			slog.Error(updateErr.Error())
