@@ -38,7 +38,7 @@ CREATE TABLE machine(
     id integer primary key autoincrement,
     number integer, -- this must be set by the client
     status integer,
-    mac_address text unique ,
+    mac_address text unique default '',
     type text,
     building_name text,
     client_name text,
