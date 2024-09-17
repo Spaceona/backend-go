@@ -36,9 +36,6 @@ func main() {
 	deviceAuthRoute := auth.Route[auth.AuthDeviceRequest]{
 		auth.IsValidDevice,
 	}
-	//userAuthRoute := auth.Route[auth.AuthUserRequest]{
-	//	auth.IsValidUser,
-	//}
 	http.Handle("/", helpers.CorsMiddleware(info.APIInfoRoute))
 	http.Handle("/firmware/file/{version}", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(FileRoute))))
 	http.Handle("/firmware/latest", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(LatestVersionRoute))))

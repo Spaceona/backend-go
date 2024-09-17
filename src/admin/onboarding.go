@@ -168,7 +168,7 @@ func addMachinesToBuilding(buildings []helpers.Building, clientName string) {
 			if i != len(building.Machines)-1 {
 				sb.WriteString(fmt.Sprintf("(%d,'%s','%s','%s',0),", machine.Number, clientName, building.BuildingName, machine.Type))
 			} else {
-				sb.WriteString(fmt.Sprintf("(%d,'%s','%s','%s',0)", machine.Number, clientName, building.BuildingName, machine.Type))
+				sb.WriteString(fmt.Sprintf("(%d,'%s','%s','%s',0);", machine.Number, clientName, building.BuildingName, machine.Type))
 			}
 		}
 		_, sqlInsertMachineErr := db.UseSQL().Exec(sb.String())

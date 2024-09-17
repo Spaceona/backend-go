@@ -40,7 +40,7 @@ type GoogleTokenRequest struct {
 	GrantType    string `json:"grant_type"`
 }
 
-type GoogleTokenResponse struct {
+type GoogleToken struct {
 	AccessToken  string `json:"access_token"`
 	ExpiresIn    int    `json:"expires_in"`
 	RefreshToken string `json:"refresh_token"`
@@ -49,8 +49,8 @@ type GoogleTokenResponse struct {
 }
 
 type SpaceonaUserToken struct {
-	Email           string `json:"email"`
-	GoogleTokenInfo GoogleTokenResponse
+	UserInfo    GoogleUserInfo `json:"email"`
+	GoogleToken GoogleToken
 }
 
 func Callback(w http.ResponseWriter, r *http.Request) {
@@ -61,11 +61,21 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	if tokenErr != nil {
 		slog.Error(tokenErr.Error())
 		http.Error(w, "failed to login", http.StatusInternalServerError)
+		return
 	}
-	//TODO get google user info
+	userInfo, userInfoErr := GetGoogleUserInfo(googleToken)
+	if userInfoErr != nil {
+		slog.Error("user info err", "error", userInfoErr.Error())
+		http.Error(w, "failed to login", http.StatusInternalServerError)
+	}
+	//TODO check if the user is an admin
 
 	token := SpaceonaUserToken{}
+	token.GoogleToken = googleToken
+	token.UserInfo = userInfo
 	spaceonaToken, spaceonaTokenError := GenToken(token, time.Duration(googleToken.ExpiresIn)*time.Second)
+
+	slog.Info(spaceonaToken)
 	if spaceonaTokenError != nil {
 		slog.Error(spaceonaTokenError.Error())
 		http.Error(w, "failed to login", http.StatusInternalServerError)
@@ -86,7 +96,11 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "https://spaceona.com", http.StatusPermanentRedirect)
 }
 
-func GetGoogleToken(code string) (GoogleTokenResponse, error) {
+func AuthWithRefreshToken(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func GetGoogleToken(code string) (GoogleToken, error) {
 	googleTokenRequest := GoogleTokenRequest{
 		AccessCode:   code,
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
@@ -97,18 +111,18 @@ func GetGoogleToken(code string) (GoogleTokenResponse, error) {
 
 	requestString, marshalError := json.Marshal(&googleTokenRequest)
 	if marshalError != nil {
-		return GoogleTokenResponse{}, marshalError
+		return GoogleToken{}, marshalError
 	}
 
 	req, requestCreationError := http.NewRequest("POST", "https://oauth2.googleapis.com/token", bytes.NewBuffer(requestString))
 	if requestCreationError != nil {
-		return GoogleTokenResponse{}, requestCreationError
+		return GoogleToken{}, requestCreationError
 	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	response, tokenError := client.Do(req)
 	if tokenError != nil {
-		return GoogleTokenResponse{}, tokenError
+		return GoogleToken{}, tokenError
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -120,10 +134,49 @@ func GetGoogleToken(code string) (GoogleTokenResponse, error) {
 	if resReadError != nil {
 		slog.Error(resReadError.Error())
 	}
-	var resJson GoogleTokenResponse
+	var resJson GoogleToken
 	decodeError := json.Unmarshal(body, &resJson)
 	if decodeError != nil {
-		return GoogleTokenResponse{}, decodeError
+		return GoogleToken{}, decodeError
 	}
 	return resJson, nil
+}
+
+type GoogleUserInfo struct {
+	Id            string `json:"id"`
+	Email         string `json:"email"`
+	VerifiedEmail bool   `json:"verified_email"`
+	Name          string `json:"name"`
+	GivenName     string `json:"given_name"`
+	FamilyName    string `json:"family_name"`
+	Picture       string `json:"picture"`
+}
+
+func GetGoogleUserInfo(token GoogleToken) (GoogleUserInfo, error) {
+	req, requestCreationError := http.NewRequest("GET", "https://www.googleapis.com/oauth2/v1/userinfo?alt=json", bytes.NewBuffer([]byte("")))
+	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
+	if requestCreationError != nil {
+		return GoogleUserInfo{}, requestCreationError
+	}
+	client := &http.Client{}
+	response, infoErr := client.Do(req)
+	if infoErr != nil {
+		return GoogleUserInfo{}, infoErr
+	}
+	body, resReadError := io.ReadAll(response.Body)
+	if resReadError != nil {
+		return GoogleUserInfo{}, resReadError
+	}
+	defer func() {
+		err := response.Body.Close()
+		if err != nil {
+			slog.Error(err.Error())
+		}
+	}()
+	var userInfo GoogleUserInfo
+	decodeError := json.Unmarshal(body, &userInfo)
+	if decodeError != nil {
+		return GoogleUserInfo{}, decodeError
+	}
+	return userInfo, nil
 }
