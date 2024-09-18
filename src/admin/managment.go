@@ -17,7 +17,7 @@ type BoardMapping struct {
 	MachineId  int    `json:"machine_id"`
 }
 
-type AssignBoardResponse struct { // todo concolidate to spacesona responce with better stuffs
+type AssignBoardResponse struct { // todo consolidate to spacesona responce with better stuffs
 	Message string
 }
 

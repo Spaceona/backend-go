@@ -33,15 +33,22 @@ func main() {
 		migrations.Migrate()
 		migrations.DummyData()
 	}
-	deviceAuthRoute := auth.Route[auth.AuthDeviceRequest]{
-		auth.IsValidDevice,
+	deviceAuthRoute := auth.Route[string]{
+		Authenticate: auth.AuthenticateDevice,
+		OnError:      auth.AuthHttpError,
+		WriteToken:   []func(w http.ResponseWriter, r *http.Request, token string){auth.WriteTokenToAuthHeader, auth.WriteTokenToBody},
+	}
+	userAuthCallBack := auth.Route[*auth.SpaceonaUserToken]{
+		Authenticate: auth.AuthenticateSpaceonaUser,
+		OnError:      auth.AuthHttpError,
+		WriteToken:   []func(w http.ResponseWriter, r *http.Request, token *auth.SpaceonaUserToken){auth.WriteSpaceonaTokenToCooke, auth.Redirect},
 	}
 	http.Handle("/", helpers.CorsMiddleware(info.APIInfoRoute))
 	http.Handle("/firmware/file/{version}", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(FileRoute))))
 	http.Handle("/firmware/latest", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(LatestVersionRoute))))
 	http.Handle("/auth/device", logging.Middleware(deviceAuthRoute))
 	http.Handle("/auth/user", logging.Middleware(http.HandlerFunc(auth.GoogleConsent)))
-	http.Handle("/auth/user/callback", logging.Middleware(http.HandlerFunc(auth.Callback)))
+	http.Handle("/auth/user/callback", logging.Middleware(userAuthCallBack))
 	http.Handle("/status/update", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(status.UpdateStatusRoute))))
 	http.Handle("/onboard/board", logging.Middleware(helpers.CorsMiddleware(admin.BoardOnboardingRoute)))
 	http.Handle("/onboard/client", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(admin.ClientOnboardingRoute))))

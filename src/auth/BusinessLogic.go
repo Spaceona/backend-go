@@ -1,9 +1,12 @@
 package auth
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
-	"log/slog"
+	"net/http"
 	"spacesona-go-backend/db"
+	"time"
 )
 
 type AuthDeviceRequest struct {
@@ -14,32 +17,32 @@ type AuthDeviceRequest struct {
 type AuthUserRequest struct {
 }
 
-func IsValidDevice(body AuthDeviceRequest) bool {
+func AuthenticateDevice(r *http.Request) (string, error) {
+	var AuthDeviceRequest AuthDeviceRequest
+	decodeErr := json.NewDecoder(r.Body).Decode(&AuthDeviceRequest)
+	if decodeErr != nil {
+		return "", decodeErr
+	}
 	querySqlString := "SELECT valid FROM board where mac_address = ?;"
-	fmt.Println(body.MacAddress)
-	row, queryErr := db.UseSQL().Query(querySqlString, body.MacAddress)
+	fmt.Println(AuthDeviceRequest.MacAddress)
+	row, queryErr := db.UseSQL().Query(querySqlString, AuthDeviceRequest.MacAddress)
 	if queryErr != nil {
-		slog.Error(queryErr.Error())
-		return false
+		return "", queryErr
 	}
 	hasRows := row.Next()
 	if !hasRows {
-		slog.Error("no rows found")
-		return false
+		return "", errors.New("no rows found")
 	}
 	var valid bool
 	rowScanErr := row.Scan(&valid)
 	if rowScanErr != nil {
-		slog.Error(rowScanErr.Error())
-		return false
+		return "", rowScanErr
 	}
 	rowCloseErr := row.Close()
 	if rowCloseErr != nil {
-		return false
+		return "", rowCloseErr
 	}
-	return valid
-}
 
-func IsValidUser(body AuthUserRequest) bool {
-	return true
+	token, tokenErr := GenToken(AuthDeviceRequest, 24*time.Hour)
+	return token, tokenErr
 }

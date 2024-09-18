@@ -53,46 +53,53 @@ type SpaceonaUserToken struct {
 	GoogleToken GoogleToken
 }
 
-func Callback(w http.ResponseWriter, r *http.Request) {
+func AuthenticateSpaceonaUser(r *http.Request) (*SpaceonaUserToken, error) {
 	query := r.URL.Query()
 	code := query.Get("code")
 
 	googleToken, tokenErr := GetGoogleToken(code)
 	if tokenErr != nil {
-		slog.Error(tokenErr.Error())
-		http.Error(w, "failed to login", http.StatusInternalServerError)
-		return
+		return nil, tokenErr
 	}
 	userInfo, userInfoErr := GetGoogleUserInfo(googleToken)
 	if userInfoErr != nil {
-		slog.Error("user info err", "error", userInfoErr.Error())
-		http.Error(w, "failed to login", http.StatusInternalServerError)
+		return nil, userInfoErr
 	}
 	//TODO check if the user is an admin
 
-	token := SpaceonaUserToken{}
+	token := new(SpaceonaUserToken)
 	token.GoogleToken = googleToken
 	token.UserInfo = userInfo
 	spaceonaToken, spaceonaTokenError := GenToken(token, time.Duration(googleToken.ExpiresIn)*time.Second)
 
 	slog.Info(spaceonaToken)
 	if spaceonaTokenError != nil {
-		slog.Error(spaceonaTokenError.Error())
-		http.Error(w, "failed to login", http.StatusInternalServerError)
+		return nil, spaceonaTokenError
+	}
+	return token, nil
+}
+
+func WriteSpaceonaTokenToCooke(w http.ResponseWriter, r *http.Request, token *SpaceonaUserToken) {
+	buf := new(bytes.Buffer)
+	tokenErr := json.NewEncoder(buf).Encode(*token)
+	if tokenErr != nil {
 		return
 	}
 	cookie := http.Cookie{
 		Name:     "AuthToken",
-		Value:    spaceonaToken,
+		Value:    buf.String(),
 		Domain:   "localhost",
 		Path:     "/",
-		Expires:  time.Now().Add(time.Duration(googleToken.ExpiresIn) * time.Second),
-		MaxAge:   googleToken.ExpiresIn,
+		Expires:  time.Now().Add(time.Duration(token.GoogleToken.ExpiresIn) * time.Second),
+		MaxAge:   token.GoogleToken.ExpiresIn,
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(w, &cookie)
+}
+
+func Redirect(w http.ResponseWriter, r *http.Request, token *SpaceonaUserToken) {
 	http.Redirect(w, r, "https://spaceona.com", http.StatusPermanentRedirect)
 }
 

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"time"
 )
 
 type authDeviceResponse struct {
@@ -12,47 +11,41 @@ type authDeviceResponse struct {
 }
 
 type Route[T any] struct {
-	CanAuthenticate func(T) bool
+	Authenticate func(r *http.Request) (T, error)
+	WriteToken   []func(w http.ResponseWriter, r *http.Request, token T)
+	OnError      func(w http.ResponseWriter)
 }
 
-func (d Route[T]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.NotFound(w, r)
-		return
-	}
-	var body T
-	jsonErr := json.NewDecoder(r.Body).Decode(&body)
-	if jsonErr != nil {
-		slog.Error(jsonErr.Error())
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
-		return
-	}
-
-	if d.CanAuthenticate(body) == false {
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
-		return
-	}
-
-	token, tokenErr := GenToken(body, 24*time.Hour)
+func (d Route[string]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	token, tokenErr := d.Authenticate(r)
 	if tokenErr != nil {
-		slog.Error(tokenErr.Error())
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
+		d.OnError(w)
 		return
 	}
-	response := authDeviceResponse{token}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	resJson, jsonEncodeErr := json.Marshal(response)
-	if jsonEncodeErr != nil {
-		slog.Error(jsonEncodeErr.Error())
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
-		return
+	for _, writeToken := range d.WriteToken {
+		writeToken(w, r, token)
+	}
+	return
+}
+
+func AuthHttpError(w http.ResponseWriter) {
+	http.Error(w, "failed to authorize", http.StatusBadRequest)
+}
+
+func WriteTokenToAuthHeader(w http.ResponseWriter, r *http.Request, token string) {
+	w.Header().Add("Authorization", "Bearer "+token)
+}
+
+func WriteTokenToBody(w http.ResponseWriter, r *http.Request, token string) {
+	resStruct := authDeviceResponse{Token: token}
+	resJson, jsonDecodeErr := json.Marshal(resStruct)
+	if jsonDecodeErr != nil {
+		slog.Error(jsonDecodeErr.Error())
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	_, writeErr := w.Write(resJson)
 	if writeErr != nil {
 		slog.Error(writeErr.Error())
-		http.Error(w, "could not authenticate device", http.StatusBadRequest)
 		return
 	}
-	return
 }
