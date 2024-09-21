@@ -18,9 +18,12 @@ export let options = {
         http_req_duration: ['p(95)<200'], // 95% of requests should be below 200ms
     },
 };
-const authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImVtYWlsIjp7ImlkIjoiMTAyMTc5ODE1NTQ3MzkyMjE2NzgwIiwiZW1haWwiOiJuaWNrLmxlc2xpZTMwM0BnbWFpbC5jb20iLCJ2ZXJpZmllZF9lbWFpbCI6dHJ1ZSwibmFtZSI6Ik5pY2sgTGVzbGllIiwiZ2l2ZW5fbmFtZSI6Ik5pY2siLCJmYW1pbHlfbmFtZSI6Ikxlc2xpZSIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NJRVJzZkxpYnRKN1FhcHRTWlgxMUJwaXpQaWJTckpZMXF3cm9LR09xWnEwNFNPUkpRVj1zOTYtYyJ9LCJHb29nbGVUb2tlbiI6eyJhY2Nlc3NfdG9rZW4iOiJ5YTI5LmEwQWNNNjEyeWJCanFQR2xaUk9FYS0wN1ZUdk9rOWJ4THdzT3R6VmFXcTMxVHpPZ0llTFBHSjM4M3ZTTkxHSWtMT2h5MlZkYk41RVZIeFRFQmR5b014ZHpjQ24yWU1WZlJMd2xrUkVVNDN5UHBRb1QxUDNVN1hQaFF6THpoaGRWdGcxV2p2MmlDN1dHU1dibUpzNmRKRDR6NndxMWlNd2hTU21DQWVOT001YUNnWUtBWmNTQVJFU0ZRSEdYMk1pLVRnbnpxS0dvTWpoV1VFZS1HMUE0dzAxNzUiLCJleHBpcmVzX2luIjozNTk5LCJyZWZyZXNoX3Rva2VuIjoiMS8vMDFJT3B4Y3dkRUk2R0NnWUlBUkFBR0FFU053Ri1MOUlybFdrbElJUEFiNm83X1VDNVNPY1BnbXE1emE4Zk00dG9MQlY2WldCWmVMMllTcHdqY0JxWDZrLWZWWWxwMllyYjk1dyIsInNjb3BlIjoib3BlbmlkIGh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL2F1dGgvdXNlcmluZm8ucHJvZmlsZSBodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9hdXRoL3VzZXJpbmZvLmVtYWlsIiwidG9rZW5fdHlwZSI6IkJlYXJlciJ9fSwiZXhwIjoxNzI2OTQ1MDUwfQ.sa4QIgTyxDhC8LDAtNVCaCPchnPIXq5BH6oth-b6joM"
 
 export async function setup() {
+    const authRes =  http.post("http://localhost:3001/auth/user",JSON.stringify({}));
+    const authJson = await authRes.json()
+    const token = authJson.Token;
+
     const machines = [];
     for (let i = 0; i < max_machines/2; i++) {
         machines.push({"number":i,"type":"Washer"})
@@ -39,12 +42,11 @@ export async function setup() {
             }
         ]
     }
-    const res =  http.post("http://localhost:3000/onboard/client",JSON.stringify(clientPayload),{
+    const res =  http.post("http://localhost:3001/onboard/client",JSON.stringify(clientPayload),{
         headers: {
-            "Authorization": "bearer " + authToken
+            "Authorization": "bearer " + token
         }
     });
-    console.log(res.status)
     const json = await res.json()
     console.log(json)
     const key = json.key;
@@ -59,9 +61,9 @@ export async function setup() {
             client_name:"nicks laundry",
             client_key:key
         })
-        const boardRes = http.post("http://localhost:3000/onboard/board",boardBody,{
+        const boardRes = http.post("http://localhost:3001/onboard/board",boardBody,{
             headers: {
-                "Authorization": "bearer " + authToken
+                "Authorization": "bearer " + token
             }
         });
         const boardJson = await boardRes.json()
@@ -70,9 +72,9 @@ export async function setup() {
             sleep(0.2);
         }
     }
-    const assignRes = http.post("http://localhost:3000/admin/machine/assign",JSON.stringify({mappings:boardMappings}),{
+    const assignRes = http.post("http://localhost:3001/admin/machine/assign",JSON.stringify({mappings:boardMappings}),{
         headers: {
-            "Authorization": "bearer " + authToken
+            "Authorization": "bearer " + token
         }
     })
     const assignJson = await assignRes.json()
@@ -90,14 +92,14 @@ export default () => {
         "confidence":100
     });
 
-    const response = http.post("http://localhost:3000/status/update",payload  ,{
+    const response = http.post("http://localhost:3001/status/update",payload  ,{
         headers: {
-            "Authorization": "bearer " + authToken
+            "Authorization": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Im1hY19hZGRyZXNzIjoiNjQ6RTg6MzM6ODY6REI6QTQiLCJmaXJtd2FyZV92ZXJzaW9uIjoiMS0wLTAifSwiZXhwIjoxNzI1ODUwMzc0fQ.TxjD1KretiqsiVvpffooPicJkiUR5WV6YvvCb5WZsI8"
         }
     });
     check(response, {
         'status is 200': r => r.status === 200,
     });
 
-    sleep(Math.random() * 5);
+    sleep(Math.random() * 2);
 };

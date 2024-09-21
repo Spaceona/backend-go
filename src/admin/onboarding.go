@@ -129,15 +129,13 @@ func ClientOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	key, salt, keyGenErr := auth.GenKey()
 	if keyGenErr != nil {
-		slog.Error("failed to gen key", "error", keyGenErr.Error())
-		http.Error(w, "Error generating key try again later and contact support", http.StatusInternalServerError)
+		http.Error(w, "Error generating key try again later and contact support", http.StatusBadRequest)
 		return
 	}
 	newClientSqlString := "INSERT INTO client (name, key,salt) VALUES (?, ?,?);"
 	_, sqlInsertClientErr := db.UseSQL().Exec(newClientSqlString, body.ClientName, key, salt)
 	if sqlInsertClientErr != nil {
-		slog.Error(sqlInsertClientErr.Error())
-		http.Error(w, "Error creating client contact support", http.StatusInternalServerError)
+		http.Error(w, "Error creating client contact support", http.StatusBadRequest)
 		return
 	}
 	addMachinesToBuilding(body.Buildings, body.ClientName)
@@ -173,7 +171,6 @@ func addMachinesToBuilding(buildings []helpers.Building, clientName string) {
 				sb.WriteString(fmt.Sprintf("(%d,'%s','%s','%s',0);", machine.Number, clientName, building.BuildingName, machine.Type))
 			}
 		}
-		fmt.Println(sb.String())
 		_, sqlInsertMachineErr := db.UseSQL().Exec(sb.String())
 		if sqlInsertMachineErr != nil {
 			slog.Error("failed to add machine with error", "error", sqlInsertMachineErr.Error())

@@ -51,7 +51,6 @@ type GoogleToken struct {
 type SpaceonaUserToken struct {
 	UserInfo    GoogleUserInfo `json:"email"`
 	GoogleToken GoogleToken
-	jwt         string
 }
 
 func AuthenticateSpaceonaUser(r *http.Request) (*SpaceonaUserToken, error) {
@@ -72,7 +71,7 @@ func AuthenticateSpaceonaUser(r *http.Request) (*SpaceonaUserToken, error) {
 	token.GoogleToken = googleToken
 	token.UserInfo = userInfo
 	spaceonaToken, spaceonaTokenError := GenToken(token, time.Duration(googleToken.ExpiresIn)*time.Second)
-	token.jwt = spaceonaToken
+
 	slog.Info(spaceonaToken)
 	if spaceonaTokenError != nil {
 		return nil, spaceonaTokenError
@@ -81,9 +80,14 @@ func AuthenticateSpaceonaUser(r *http.Request) (*SpaceonaUserToken, error) {
 }
 
 func WriteSpaceonaTokenToCooke(w http.ResponseWriter, r *http.Request, token *SpaceonaUserToken) {
+	buf := new(bytes.Buffer)
+	tokenErr := json.NewEncoder(buf).Encode(*token)
+	if tokenErr != nil {
+		return
+	}
 	cookie := http.Cookie{
 		Name:     "AuthToken",
-		Value:    token.jwt,
+		Value:    buf.String(),
 		Domain:   "localhost",
 		Path:     "/",
 		Expires:  time.Now().Add(time.Duration(token.GoogleToken.ExpiresIn) * time.Second),

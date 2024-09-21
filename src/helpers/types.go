@@ -34,7 +34,7 @@ func (cm DBMachine) MarshalBinary() ([]byte, error) {
 }
 
 type Building struct {
-	BuildingName string         `json:"building_name"`
+	BuildingName sql.NullString `json:"building_name"`
 	Machines     []SetupMachine `json:"machines"`
 }
 

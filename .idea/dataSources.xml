@@ -30,12 +30,5 @@
         </library>
       </libraries>
     </data-source>
-    <data-source source="LOCAL" name="dev@localhost" uuid="03edadf4-7ef5-4ce7-bd0d-5c7c23678e41">
-      <driver-ref>postgresql</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/dev</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
   </component>
 </project>
