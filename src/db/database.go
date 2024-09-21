@@ -6,7 +6,8 @@ import (
 	"fmt"
 	//_ "github.com/mattn/go-sqlite3"
 	"github.com/redis/go-redis/v9"
-	_ "github.com/tursodatabase/go-libsql"
+	//_ "github.com/tursodatabase/go-libsql"
+	_ "github.com/lib/pq"
 	"log"
 	"log/slog"
 	"os"
@@ -21,6 +22,14 @@ type database struct {
 	redis    *redis.Client
 	redisCtx context.Context
 }
+
+const (
+	host     = "localhost"
+	port     = 5432
+	user     = "postgres"
+	password = "your-password"
+	dbname   = "calhounio_demo"
+)
 
 func New() *database {
 	dbName := os.Getenv("DB_URL")

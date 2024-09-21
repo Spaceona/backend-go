@@ -45,6 +45,7 @@ func UpdateStatusRoute(w http.ResponseWriter, r *http.Request) {
 		if updateErr != nil {
 			slog.Error(updateErr.Error())
 			if errors.Is(updateErr, NotMappedError) {
+				slog.Error(updateErr.Error(), "mac_address", body.MacAddress)
 				http.Error(w, "board is not mapped to a machine contact admin", http.StatusBadRequest)
 				return
 			}
@@ -91,7 +92,9 @@ func refreshCache(request UpdateStatusRequest) error {
 	var machineForCache helpers.DBMachine
 	rowScanErr := row.Scan(&machineForCache.Id, &machineForCache.Number, &machineForCache.MacAddress, &machineForCache.Type, &machineForCache.Building, &machineForCache.ClientName)
 	if rowScanErr != nil {
+		slog.Error(rowScanErr.Error())
 		slog.Error("failed to scan row")
+		return rowScanErr
 	}
 	machineForCache.Status = request.Status
 	machineForCache.EstimatedDuration = request.TimeBetweenChange
@@ -117,14 +120,24 @@ func updateStatus(request UpdateStatusRequest) error {
 	row, updateErr := db.UseSQL().Query(sqlUpdateString, request.Status, time.Now().Format(time.RFC1123), request.MacAddress)
 	if updateErr != nil {
 		//TODO dont send back sql errs
+		slog.Error("failed to update row", "error", updateErr.Error())
 		return updateErr
 	}
-	row.Next()
+	hasRow := row.Next()
+	if hasRow == false {
+		return NotMappedError
+	}
 	var machineForCache helpers.DBMachine
 	rowScanStart := time.Now()
 	rowScanErr := row.Scan(&machineForCache.Id, &machineForCache.Number, &machineForCache.MacAddress, &machineForCache.Type, &machineForCache.Building, &machineForCache.ClientName)
 	if rowScanErr != nil {
-		slog.Error("failed to scan row")
+		if rowScanErr == errors.New("error code = 1: Error fetching next row: SQLite failure: `database is locked") {
+			slog.Error("database is locked")
+		} else {
+			slog.Error(rowScanErr.Error())
+			slog.Error("failed to scan row")
+			return rowScanErr
+		}
 	}
 
 	//

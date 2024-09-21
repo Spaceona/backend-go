@@ -46,7 +46,6 @@ func GetStatusRoute(w http.ResponseWriter, r *http.Request) {
 		slog.Error(rdsErr.Error())
 		return
 	}
-	//todo Also could be slow depending on the query but for now its like only ~150 machines so its fine :)
 	machinesFromeCache := make(map[int]helpers.DBMachine)
 	for _, machine := range machines {
 		result, GetValueErr := rds.Get(ctx, machine).Result()

@@ -19,6 +19,14 @@ services:
           memory: 500M
     expose:
       - "3001"
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: dev
   cadvisor:
     container_name: cadvisor
     image: gcr.io/cadvisor/cadvisor:latest

@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS board;
 DROP TABLE IF EXISTS building;
 DROP TABLE IF EXISTS client;
 PRAGMA journal_mode=WAL;
+PRAGMA busy_timeout = 3000;
 CREATE TABLE StatusChange(
     id integer primary key, -- this is auto assigned
     machine_id integer,
@@ -38,7 +39,7 @@ CREATE TABLE machine(
     id integer primary key autoincrement,
     number integer, -- this must be set by the client
     status integer,
-    mac_address text unique default '',
+    mac_address text,
     type text,
     building_name text,
     client_name text,
