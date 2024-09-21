@@ -1,5 +1,8 @@
 *.db
+*.db-wal
+*.db-shim
 .env
 .env.prod
+
 
 node_modules
