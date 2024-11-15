@@ -165,12 +165,12 @@ func addMachinesToBuilding(buildings []helpers.Building, clientName string) {
 		}
 		//todo figure out how to do a mass insert
 		var sb strings.Builder
-		sb.WriteString("INSERT INTO machine (number,client_name,building_name,type,status) VALUES")
+		sb.WriteString("INSERT INTO machine (number,client_name,mac_address,building_name,type,status) VALUES")
 		for i, machine := range building.Machines {
 			if i != len(building.Machines)-1 {
-				sb.WriteString(fmt.Sprintf("(%d,'%s','%s','%s',0),", machine.Number, clientName, building.BuildingName, machine.Type))
+				sb.WriteString(fmt.Sprintf("(%d,'%s',NUll,'%s','%s',0),", machine.Number, clientName, building.BuildingName, machine.Type))
 			} else {
-				sb.WriteString(fmt.Sprintf("(%d,'%s','%s','%s',0);", machine.Number, clientName, building.BuildingName, machine.Type))
+				sb.WriteString(fmt.Sprintf("(%d,'%s',NULL,'%s','%s',0);", machine.Number, clientName, building.BuildingName, machine.Type))
 			}
 		}
 		_, sqlInsertMachineErr := db.UseSQL().Exec(sb.String())
