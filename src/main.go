@@ -61,11 +61,13 @@ func main() {
 	http.Handle("/status/{client}/{building}/{type}", logging.Middleware(helpers.CorsMiddleware(status.GetStatusRoute)))
 	http.Handle("/status/{client}/{building}/{type}/{machineId}", logging.Middleware(helpers.CorsMiddleware(status.GetStatusRoute)))
 	http.Handle("/info/client/{client}", logging.Middleware(helpers.CorsMiddleware(info.GetClientInfoRoute)))
+	http.Handle("/info/board/{client}", logging.Middleware(helpers.CorsMiddleware(info.GetBoardInfoRoute)))
 	http.Handle("/metrics/", promhttp.Handler())
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3001"
 	}
+	println(port)
 	startUpErr := http.ListenAndServe(":"+port, nil)
 	if startUpErr != nil {
 		panic(startUpErr)

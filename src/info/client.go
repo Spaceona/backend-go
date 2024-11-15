@@ -50,3 +50,43 @@ func GetClientInfoRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+type GetBoardsResponse struct {
+	Boards []helpers.Board
+}
+
+func GetBoardInfoRoute(w http.ResponseWriter, r *http.Request) {
+	slog.Info("hello world")
+	clientName := r.PathValue("client")
+	rows, sqlErr := db.UseSQL().Query("SELECT mac_address,valid,client_name from  board where client_name = ?", clientName)
+	if sqlErr != nil {
+		return
+	}
+	defer func(rows *sql.Rows) {
+		rowCloseErr := rows.Close()
+		if rowCloseErr != nil {
+			slog.Error(rowCloseErr.Error())
+		}
+	}(rows)
+	boards := make([]helpers.Board, 0)
+	for rows.Next() {
+		var machine helpers.Board
+		scanErr := rows.Scan(&machine.MacAddress, &machine.Valid, &machine.ClientName)
+		if scanErr != nil {
+			slog.Error(scanErr.Error())
+		}
+		boards = append(boards, machine)
+	}
+	getStatusResponse := GetBoardsResponse{boards}
+	responseString, jsonEncodeErr := json.Marshal(getStatusResponse)
+	if jsonEncodeErr != nil {
+		http.Error(w, jsonEncodeErr.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_, writeErr := w.Write(responseString)
+	if writeErr != nil {
+		http.Error(w, writeErr.Error(), http.StatusInternalServerError)
+		return
+	}
+}
