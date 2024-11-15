@@ -125,6 +125,7 @@ func ClientOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	var body newClientRequest
 	decodeErr := json.NewDecoder(r.Body).Decode(&body)
 	if decodeErr != nil {
+		slog.Error(decodeErr.Error())
 		http.Error(w, "Error With passed parameters please check the documentation or check support", http.StatusBadRequest)
 	}
 	key, salt, keyGenErr := auth.GenKey()
@@ -135,6 +136,7 @@ func ClientOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 	newClientSqlString := "INSERT INTO client (name, key,salt) VALUES (?, ?,?);"
 	_, sqlInsertClientErr := db.UseSQL().Exec(newClientSqlString, body.ClientName, key, salt)
 	if sqlInsertClientErr != nil {
+		slog.Error("insert client err", "error", sqlInsertClientErr.Error())
 		http.Error(w, "Error creating client contact support", http.StatusBadRequest)
 		return
 	}

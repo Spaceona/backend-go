@@ -1,1 +1,1 @@
-docker-compose up -f ./docker-compose.prod.yml up --detach
+docker-compose -f ./docker-compose.prod.yml up

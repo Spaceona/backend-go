@@ -21,7 +21,6 @@ import (
 // https://oauth2.googleapis.com/tokeninfo?id_token=XYZ123 verify token
 
 func GoogleConsent(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("wahtttttt")
 	scopesArray := []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile", "openid"}
 	scopes := strings.Join(scopesArray, " ")
 	clientId := os.Getenv("GOOGLE_CLIENT_ID")
@@ -51,6 +50,7 @@ type GoogleToken struct {
 type SpaceonaUserToken struct {
 	UserInfo    GoogleUserInfo `json:"email"`
 	GoogleToken GoogleToken
+	tokenString string
 }
 
 func AuthenticateSpaceonaUser(r *http.Request) (*SpaceonaUserToken, error) {
@@ -87,7 +87,7 @@ func WriteSpaceonaTokenToCooke(w http.ResponseWriter, r *http.Request, token *Sp
 	}
 	cookie := http.Cookie{
 		Name:     "AuthToken",
-		Value:    buf.String(),
+		Value:    token.tokenString,
 		Domain:   "localhost",
 		Path:     "/",
 		Expires:  time.Now().Add(time.Duration(token.GoogleToken.ExpiresIn) * time.Second),

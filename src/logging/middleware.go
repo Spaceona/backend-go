@@ -10,5 +10,6 @@ func Middleware(next http.Handler) http.HandlerFunc {
 		slog.Info("Got request", "Remote Address", r.RemoteAddr, "Route", r.RequestURI, "Method", r.Method)
 		RequestsReceived.Inc()
 		next.ServeHTTP(w, r)
+
 	}
 }

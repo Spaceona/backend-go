@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"spacesona-go-backend/logging"
 	"strings"
@@ -12,6 +13,7 @@ func Middleware(next http.HandlerFunc) http.HandlerFunc {
 		fmt.Printf("huh")
 		//TODO validate token
 		authHeader := r.Header.Get("Authorization")
+		//todo get cookie
 		if authHeader == "" {
 			logging.RequestsAuthenticatedFailed.Inc()
 			http.Error(w, "not authenticated", http.StatusUnauthorized)
@@ -25,6 +27,7 @@ func Middleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 		validationErr := ValidateToken(token[1])
 		if validationErr != nil {
+			slog.Error(validationErr.Error())
 			logging.RequestsAuthenticatedFailed.Inc()
 			http.Error(w, "not authenticated", http.StatusUnauthorized)
 			return

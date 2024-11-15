@@ -3,7 +3,8 @@ DROP TABLE IF EXISTS machine;
 DROP TABLE IF EXISTS board;
 DROP TABLE IF EXISTS building;
 DROP TABLE IF EXISTS client;
-PRAGMA journal_mode=WAL;
+-- PRAGMA journal_mode=WAL;
+-- PRAGMA journal_mode=DELETE;
 CREATE TABLE StatusChange(
     id integer primary key, -- this is auto assigned
     machine_id integer,
