@@ -44,13 +44,13 @@ func main() {
 		WriteToken:   []func(w http.ResponseWriter, r *http.Request, token *auth.SpaceonaUserToken){auth.WriteSpaceonaTokenToCooke, auth.Redirect},
 	}
 	http.Handle("/", helpers.CorsMiddleware(info.APIInfoRoute))
-	http.Handle("/firmware/file/{version}/", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(FileRoute))))
-	http.Handle("/firmware/latest/", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(LatestVersionRoute))))
-	http.Handle("/auth/device/", logging.Middleware(deviceAuthRoute))
-	http.Handle("/auth/user/", logging.Middleware(http.HandlerFunc(auth.GoogleConsent)))
-	http.Handle("/auth/user/callback/", logging.Middleware(userAuthCallBack))
+	http.Handle("/firmware/file/{version}", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(FileRoute))))
+	http.Handle("/firmware/latest", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(LatestVersionRoute))))
+	http.Handle("/auth/device", logging.Middleware(deviceAuthRoute))
+	http.Handle("/auth/user", logging.Middleware(http.HandlerFunc(auth.GoogleConsent)))
+	http.Handle("/auth/user/callback", logging.Middleware(userAuthCallBack))
 	http.Handle("/status/update", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(status.UpdateStatusRoute))))
-	http.Handle("/onboard/board/", logging.Middleware(helpers.CorsMiddleware(admin.BoardOnboardingRoute)))
+	http.Handle("/onboard/board", logging.Middleware(helpers.CorsMiddleware(admin.BoardOnboardingRoute)))
 	http.Handle("/onboard/client", logging.Middleware(helpers.CorsMiddleware(admin.ClientOnboardingRoute)))
 	http.Handle("/admin/machine/assign/", auth.Middleware(logging.Middleware(helpers.CorsMiddleware(admin.AssignBoardEndpoint))))
 	http.Handle("/admin/device/valid/", logging.Middleware(logging.Middleware(helpers.CorsMiddleware(admin.SetBoardValid))))
@@ -62,7 +62,7 @@ func main() {
 	http.Handle("/status/{client}/{building}/{type}/{machineId}", logging.Middleware(helpers.CorsMiddleware(status.GetStatusRoute)))
 	http.Handle("/info/client/{client}", logging.Middleware(helpers.CorsMiddleware(info.GetClientInfoRoute)))
 	http.Handle("/info/board/{client}", logging.Middleware(helpers.CorsMiddleware(info.GetBoardInfoRoute)))
-	http.Handle("/metrics/", promhttp.Handler())
+	http.Handle("/metrics", promhttp.Handler())
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3001"
