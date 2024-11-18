@@ -14,7 +14,7 @@ import (
 )
 
 type UpdateStatusRequest struct {
-	MacAddress        string `json:"mac_address"` //TODO only send mac
+	MacAddress        string `json:"mac_address"`
 	FirmwareVersion   string `json:"firmware_version"`
 	Status            bool   `json:"Status"`
 	StatusChanged     bool   `json:"StatusChanged"`

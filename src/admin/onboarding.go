@@ -133,6 +133,7 @@ func ClientOnboardingRoute(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error generating key try again later and contact support", http.StatusBadRequest)
 		return
 	}
+	//todo could get rid of
 	newClientSqlString := "INSERT INTO client (name, key,salt) VALUES (?, ?,?);"
 	_, sqlInsertClientErr := db.UseSQL().Exec(newClientSqlString, body.ClientName, key, salt)
 	if sqlInsertClientErr != nil {
