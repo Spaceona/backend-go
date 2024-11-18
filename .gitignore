@@ -3,6 +3,6 @@
 *.db-shim
 .env
 .env.prod
-
+.DS_Store
 
 node_modules
