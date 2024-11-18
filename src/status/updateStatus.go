@@ -25,7 +25,6 @@ type UpdateStatusRequest struct {
 var NotMappedError = errors.New("board is not mapped to machine")
 
 func UpdateStatusRoute(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("hitting end point")
 	start := time.Now()
 	defer func() {
 		logging.UpdateStatusDuration.Observe(time.Since(start).Seconds())
@@ -40,6 +39,7 @@ func UpdateStatusRoute(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cant decode request", http.StatusBadRequest)
 		return
 	}
+	slog.Info("got request from board", "mac address", body.MacAddress, "firmware version", body.FirmwareVersion)
 	if body.StatusChanged == true {
 		updateErr := updateStatus(body)
 		if updateErr != nil {

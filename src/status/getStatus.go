@@ -123,7 +123,7 @@ func getFromDb(clientName string, buildingName string, machineType string, machi
 	return allStatuses, getStatusError
 }
 
-func GetStatusLing(w http.ResponseWriter, r *http.Request) ([]boardStatus, error) {
+func GetStatusHistory(w http.ResponseWriter, r *http.Request) ([]boardStatus, error) {
 
 	clientName := r.PathValue("client")
 	buildingName := r.PathValue("building")

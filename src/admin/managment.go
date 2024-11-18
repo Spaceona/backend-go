@@ -39,6 +39,8 @@ func AssignBoardEndpoint(w http.ResponseWriter, r *http.Request) {
 		_, updateErr := db.UseSQL().Exec(sqlUpdateString, mapping.MacAddress, mapping.MachineId)
 		if updateErr != nil {
 			slog.Error(updateErr.Error())
+			http.Error(w, "Could not assign machine", http.StatusBadRequest)
+			return
 		}
 	}
 	w.Header().Set("Content-Type", "application/json")
