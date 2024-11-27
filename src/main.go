@@ -30,6 +30,7 @@ func main() {
 	db.Database = db.New()
 	migrate := os.Getenv("MIGRATE")
 	if migrate == "true" {
+		slog.Info("migrating database")
 		migrations.Migrate()
 		migrations.DummyData()
 	}

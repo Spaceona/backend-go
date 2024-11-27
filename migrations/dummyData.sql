@@ -1,6 +1,6 @@
 insert into client(name,key) values ('Lafayette','fjdslka');
 insert into client(name,key) values ('WPI','gfhdsaj');
-insert into client(name,key,salt) values ('lafTest','5J*P)S6ufUcknP1IllEn%(tu7',0x4EA6D6C7AA008ADCC190177975AD34D3AC61BA9E30448EEC8B);
+insert into client(name,key,salt) values ('lafTest','5J*P)S6ufUcknP1IllEn%(tu7','0x4EA6D6C7AA008ADCC190177975AD34D3AC61BA9E30448EEC8B');
 
 insert into building(name, client_name) values ('Watson Hall','Lafayette');
 insert into building(name, client_name) values ('Reeder House','Lafayette');
