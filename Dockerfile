@@ -13,6 +13,8 @@ COPY ./migrations ./migrations
 
 RUN go build -o /spacesona-go
 
+RUN apt get sqlite3
+
 EXPOSE 3001
 
 CMD ["/spacesona-go"]
