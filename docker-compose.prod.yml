@@ -6,7 +6,7 @@ services:
       - "3001:3001"
     volumes:
       - ./firmware:/usr/src/app/firmware
-      - data:/app/database.db
+      - ${PWD}/database:/app/database.db
       - ./.env:/app/.env
     env_file:
       - ./.env # Specify the path to your environment file relative to the docker-compose.yml file
@@ -24,6 +24,6 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /root/spaceona-go-backend
+      device:
       o: bind
 
