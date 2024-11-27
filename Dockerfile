@@ -12,8 +12,8 @@ COPY ./migrations ./migrations
 #COPY ./test.db ./test.db
 
 RUN go build -o /spacesona-go
-
-RUN apt get sqlite3
+RUN apt update
+RUN apt install sqlite3 # todo remove later
 
 EXPOSE 3001
 
