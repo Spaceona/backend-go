@@ -12,7 +12,7 @@ COPY ./migrations ./migrations
 #COPY ./test.db ./test.db
 
 RUN go build -o /spacesona-go
-RUN apt --allow-unauthenticated update
+RUN apt-get --allow-unauthenticated update
 RUN apt install sqlite3 # todo remove later
 
 EXPOSE 3001
