@@ -6,7 +6,7 @@ services:
       - "3001:3001"
     volumes:
       - ./firmware:/usr/src/app/firmware
-      - ./database.db:/app/database.db
+      - data:/app/database.db
       - ./.env:/app/.env
     env_file:
       - ./.env # Specify the path to your environment file relative to the docker-compose.yml file
@@ -19,4 +19,11 @@ services:
     ports:
       - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./database.db
+      o: bind
 
