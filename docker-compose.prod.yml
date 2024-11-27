@@ -6,7 +6,7 @@ services:
       - "3001:3001"
     volumes:
       - ./firmware:/usr/src/app/firmware
-      - ${PWD}/database.db:/app/database.db
+#      - ${PWD}/database.db:/app/database.db
       - ./.env:/app/.env
     env_file:
       - ./.env # Specify the path to your environment file relative to the docker-compose.yml file
