@@ -24,6 +24,6 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: ./database.db
+      device: /root/spaceona-go-backend
       o: bind
 
