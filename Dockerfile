@@ -9,7 +9,7 @@ COPY ./src .
 COPY ./migrations ./migrations
 #TOOD remove me
 #COPY .env .env
-#COPY ./test.db ./test.db
+COPY ./database.db ./datavase.db
 
 RUN go build -o /spacesona-go
 RUN apt-get --allow-unauthenticated update

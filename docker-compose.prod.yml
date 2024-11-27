@@ -19,11 +19,3 @@ services:
     ports:
       - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning
-#volumes:
-#  data:
-#    driver: local
-#    driver_opts:
-#      type: none
-#      device:
-#      o: bind
-
