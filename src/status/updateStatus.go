@@ -15,7 +15,7 @@ import (
 
 type UpdateStatusRequest struct {
 	MacAddress        string `json:"mac_address"`
-	FirmwareVersion   string `json:"firmware_version"`
+	FirmwareVersion   string `json:"firmwareVersion"`
 	Status            bool   `json:"Status"`
 	StatusChanged     bool   `json:"StatusChanged"`
 	TimeBetweenChange int    `json:"timeBetweenChange"`
