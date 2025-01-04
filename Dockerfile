@@ -9,8 +9,8 @@ COPY ./src .
 COPY ./migrations ./migrations
 #TOOD remove me
 #COPY .env .env
-COPY ./database.db ./database.db
-
+COPY ./database.db .
+COPY ./firmware ./firmware
 RUN go build -o /spacesona-go
 RUN apt-get --allow-unauthenticated update
 RUN apt install sqlite3 # todo remove later
