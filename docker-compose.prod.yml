@@ -8,6 +8,12 @@ services:
       - ./firmware:/usr/src/app/firmware
       #      - ${PWD}/database.db:/app/database.db
       - ./.env:/app/.env
+      - ./data:/app/data
+    environment:
+      # DB lives on the host in ./data so it survives container rebuilds
+      - DB_URL=file:/app/data/database.db
+      # MIGRATE=true runs migrations/0-init.sql, which DROPS all tables on every start
+      - MIGRATE=false
     env_file:
       - ./.env # Specify the path to your environment file relative to the docker-compose.yml file
     restart: always
@@ -17,5 +23,5 @@ services:
     image: redis:6.2-alpine
     restart: always
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
     command: redis-server --save 20 1 --loglevel warning

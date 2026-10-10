@@ -6,3 +6,5 @@
 .DS_Store
 
 node_modules
+*.db-shm
+data/

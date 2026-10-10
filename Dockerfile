@@ -9,7 +9,7 @@ COPY ./src .
 COPY ./migrations ./migrations
 #TOOD remove me
 #COPY .env .env
-COPY ./database.db .
+# DB now lives in ./data (mounted volume); no longer baked into the image
 COPY ./firmware ./firmware
 RUN go build -o /spacesona-go
 RUN apt-get --allow-unauthenticated update
